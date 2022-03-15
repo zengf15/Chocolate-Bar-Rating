@@ -5,10 +5,74 @@ date: "3/15/2022"
 output: git_document
 ---
 
+The data comes from Flavors of Cacao by way of Georgios and Kelsey.
+
 ```{r load data and packages}
-library(ggplot2)
-library(readr)
-library(stringr)
-library(lubridate)
-cacao <- read_csv('../input/flavors_of_cacao.csv')
+library(tidyverse)
+library(tidymodels)
+library(broom)
+cacao <- read_csv('flavors_of_cacao.csv')
+```
+
+To clean up the data, let's replace the spaces from the variable names with underscores so they are more manageable. Also, we should remove the % signs in the cocoa percent so that we can analyze them as numeric values.
+
+```{r test}
+names(cacao) <- tolower(gsub(pattern = '[[:space:]+]', '_', names(cacao)))
+cacao$cocoa_percent <- sapply(cacao$cocoa_percent, function(x) gsub("%", "", x))
+```
+
+Both the rating and the cocoa percent are normally distributed. 
+
+```{r dist}
+cacao %>%
+  ggplot(aes(x=rating)) + 
+  geom_histogram(binwidth=0.5)
+cacao %>%
+  ggplot(aes(x=cocoa_percent)) + 
+  geom_histogram(binwidth=5)
+```
+
+The top 3 chocolate manufacturing countries are US, France, and Canada. The top 3 known bean types are Trinitario, Criollo, and Forastero. The top 5 bean origins are Venezuela, Ecuado, Peru, Madagascar, and Dominican Republic, with the top 3 in South America, the fourth in Africa, and the fifth in central America. This makes sense because US is the largest manufacturer and they might import beans mainly from the closest locations.
+
+```{r count}
+cacao %>%
+  count(company_location) %>%
+  arrange(desc(n))
+cacao %>%
+  count(bean_type) %>%
+  arrange(desc(n))
+cacao %>%
+  count(broad_bean_origin) %>%
+  arrange(desc(n))
+```
+
+Cocoa percent seems to be weakly, negatively correlated with rating, such that lower cocoa percent tends to be more highly favored.
+
+```{r line}
+m_percent <- lm(rating ~ cocoa_percent, cacao)
+summary(m_percent)
+```
+
+Now I am going to create a new variable called rating_new and regroup the products into 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, and 5.
+
+```{r plot}
+cacao <- cacao %>%
+  mutate(rating_new = case_when(
+         rating <= 1 ~ 1,
+         rating > 1 & rating <= 1.5 ~ 1.5,
+         rating > 1.5 & rating <= 2 ~ 2,
+         rating > 2 & rating <= 2.5 ~ 2.5,
+         rating > 2.5 & rating <= 3 ~ 3,
+         rating > 3 & rating <= 3.5 ~ 3.5,
+         rating > 3.5 & rating <= 4 ~ 4,
+         rating > 4 & rating <= 4.5 ~ 4.5,
+         rating > 4.5 & rating <= 5 ~ 5
+         ))
+```
+
+
+```{r plot}
+cacao %>%
+  ggplot(aes(y=rating_new, fill=)) +
+  geom_bar()
 ```
