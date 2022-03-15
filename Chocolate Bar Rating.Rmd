@@ -1,0 +1,14 @@
+---
+title: "Chocolate Bar Rating"
+author: "Fanyi Zeng"
+date: "3/15/2022"
+output: git_document
+---
+
+```{r load data and packages}
+library(ggplot2)
+library(readr)
+library(stringr)
+library(lubridate)
+cacao <- read_csv('../input/flavors_of_cacao.csv')
+```
