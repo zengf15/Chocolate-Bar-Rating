@@ -2,12 +2,13 @@
 title: "Chocolate Bar Rating"
 author: "Fanyi Zeng"
 date: "3/15/2022"
-output: git_document
+output: github_document
 ---
 
 The data comes from Flavors of Cacao by way of Georgios and Kelsey.
+source: https://github.com/rfordatascience/tidytuesday/blob/master/data/2022/2022-01-18/readme.md
 
-```{r load data and packages}
+```{r load data and packages, message = FALSE}
 library(tidyverse)
 library(tidymodels)
 library(broom)
@@ -16,9 +17,10 @@ cacao <- read_csv('flavors_of_cacao.csv')
 
 To clean up the data, let's replace the spaces from the variable names with underscores so they are more manageable. Also, we should remove the % signs in the cocoa percent so that we can analyze them as numeric values.
 
-```{r test}
+```{r test, message = FALSE}
 names(cacao) <- tolower(gsub(pattern = '[[:space:]+]', '_', names(cacao)))
 cacao$cocoa_percent <- sapply(cacao$cocoa_percent, function(x) gsub("%", "", x))
+cacao <- type_convert(cacao)
 ```
 
 Both the rating and the cocoa percent are normally distributed. 
@@ -73,7 +75,7 @@ cacao <- cacao %>%
 
 Then, let's break down rating distribution by company location. Since there are a lot of locations, I only filter for the top 10 company locations. Apparently, US is the largest chocolate manufacturer. However, speaking of chocolate flavor, Italy seems to have the best chocolate in the world, even though it has relatively smaller market share. Interestingly, Belgium not only has good chocolate, but also has poorly rated ones.
 
-```{r plot}
+```{r plot2}
 cacao %>%
   filter(company_location=="U.S.A."|company_location=="U.K."|company_location=="Italy"|company_location=="Canada"|company_location== "France" |company_location== "Ecuador"|company_location== "Australia"|company_location== "Germany"|company_location== "Belgium"|company_location== "Switzerland") %>%
   ggplot(aes(y=rating_new, fill=company_location)) +
@@ -82,7 +84,7 @@ cacao %>%
 
 Now, let's break down rating distribution by bean type. Again, Top 10 (known) bean types are selected. It seems one brand of Trinitario has the best rating and one brand of Forastero the worst.
 
-```{r plot2}
+```{r plot3}
 cacao %>%
   filter(bean_type == "Trinitario"|bean_type == "Criollo"|bean_type == "Forastero"|bean_type == "Forastero (Nacional)"|bean_type == "Blend"|bean_type == "Criollo, Trinitario"|bean_type == "Forastero (Arriba)"|bean_type == "Criollo (Porcelana)"|bean_type == "Trinitario, Criollo"|bean_type == "Forastero (Parazinho)") %>%
   ggplot(aes(y=rating_new, fill=bean_type)) +
@@ -91,7 +93,7 @@ cacao %>%
 
 Next, we can break down rating distribution by broad bean origin. Top 10 are selected. One brand of Venezuela's originated chocolate is the best rated, and one brand of Ecuador's originated chocolate is the worst rated.			
 
-```{r plot3}
+```{r plot4}
 cacao %>%
   filter(broad_bean_origin=="Venezuela"|broad_bean_origin=="Ecuador"|broad_bean_origin=="Peru"|broad_bean_origin=="Madagascar"|broad_bean_origin=="Dominican Republic"|broad_bean_origin=="Nicaragua"|broad_bean_origin=="Brazil"|broad_bean_origin=="Bolivia"|broad_bean_origin=="Belize"|broad_bean_origin=="Papua New Guinea") %>%
   ggplot(aes(y=rating_new, fill=broad_bean_origin)) +
@@ -103,6 +105,8 @@ These distributions make me wonder what specific chocolate brands are in categor
 Three Beligum branded and one Sao Tome (an African island nation) branded chocolate bars have the lowest ratings.
 
 The two best chocolate bars are from the Italian brand, Amedei. It is an artisan chocolate company in the Tuscany region of Italy and is considered among the finest chocolate manufacturers in the world. Fun fact, they only have 33 employees in the company.
+
+I would love to try their chocolates!
 
 ```{r filter}
 cacao %>%
